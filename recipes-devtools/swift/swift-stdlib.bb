@@ -30,7 +30,7 @@ EXTRA_INCLUDE_FLAGS = "\
 
 TARGET_LDFLAGS += "-w -fuse-ld=lld -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current"
 
-HOST_SWIFT_SUPPORT_DIR = "/tmp/swift-stdlib-yocto"
+HOST_SWIFT_SUPPORT_DIR = "${WORKDIR}/swift-stdlib-yocto"
 SWIFT_CMAKE_TOOLCHAIN_FILE = "${HOST_SWIFT_SUPPORT_DIR}/linux-${SWIFT_TARGET_ARCH}-toolchain.cmake"
 SWIFT_CONFIGURE_CMAKE_SCRIPT="${WORKDIR}/cmake-configure-swift-stdlib.sh"
 SWIFT_C_FLAGS = "-w -fuse-ld=lld -target ${SWIFT_TARGET_NAME} --sysroot ${STAGING_DIR_TARGET} -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GGC_VERSION} -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GGC_VERSION} -I${STAGING_DIR_TARGET}/usr/include ${EXTRA_INCLUDE_FLAGS}"
@@ -104,7 +104,7 @@ do_configure() {
     export CXXFLAGS="${SWIFT_CXX_FLAGS}"
     export SWIFT_TARGET_ARCH=${SWIFT_TARGET_ARCH}
     export SWIFT_TARGET_NAME=${SWIFT_TARGET_NAME}
-    
+
     mkdir -p ${HOST_SWIFT_SUPPORT_DIR}
     rm -rf $SWIFT_BUILDDIR
     mkdir -p $SWIFT_BUILDDIR
