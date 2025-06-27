@@ -7,7 +7,9 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=1cd73afe3fb82e8d5c899b9d926451d0"
 require swift-version.inc
 PV = "${SWIFT_VERSION}"
 
-SRC_URI = "git://github.com/apple/swift-corelibs-foundation.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1"
+SRC_URI = "git://github.com/apple/swift-corelibs-foundation.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1 \
+        file://0002-Foundation-check-for-strlcpy-strlcat.patch \
+"
 
 S = "${WORKDIR}/git"
 
@@ -15,6 +17,14 @@ DEPENDS = "swift-stdlib libdispatch ncurses libxml2 icu curl"
 RDEPENDS_${PN} += "swift-stdlib libdispatch"
 
 inherit swift-cmake-base
+
+python () {
+    for var in ['CFLAGS', 'CXXFLAGS', 'LDFLAGS']:
+        flags = d.getVar(var, expand=True)
+        if flags:
+            flags = flags.replace("-fcanon-prefix-map", "")
+            d.setVar(var, flags)
+}
 
 TARGET_LDFLAGS += "-L${STAGING_DIR_TARGET}/usr/lib/swift/linux"
 
@@ -28,18 +38,19 @@ lcl_maybe_fortify="-D_FORTIFY_SOURCE=0"
 EXTRA_OECMAKE+= "-Ddispatch_DIR=${STAGING_DIR_TARGET}/usr/lib/swift/dispatch/cmake"
 
 # Ensure the right CPU is targeted
-cmake_do_generate_toolchain_file_append() {
+cmake_do_generate_toolchain_file:append() {
     sed -i 's/set([ ]*CMAKE_SYSTEM_PROCESSOR .*[ ]*)/set(CMAKE_SYSTEM_PROCESSOR ${TARGET_CPU_NAME})/' ${WORKDIR}/toolchain.cmake
+sed -i 's|-fcanon-prefix-map[^ ]*||g' ${WORKDIR}/toolchain.cmake
 }
 
-do_configure_append() {
+do_configure:append() {
     # Workaround Dispatch defined with cmake and module
     mkdir -p /tmp/dispatch
 	cp -rf ${STAGING_DIR_TARGET}/usr/lib/swift/dispatch/module.modulemap /tmp/dispatch/module.modulemap
     rm -rf ${STAGING_DIR_TARGET}/usr/lib/swift/dispatch/module.modulemap
 }
 
-do_install_append() {
+do_install:append() {
     # No need to install the plutil onto the target, so remove it for now
     rm ${D}${bindir}/plutil
 
@@ -50,5 +61,5 @@ do_install_append() {
     cp -rf /tmp/dispatch/module.modulemap ${STAGING_DIR_TARGET}/usr/lib/swift/dispatch/module.modulemap
 }
 
-FILES_${PN} = "${libdir}/swift/*"
+FILES:${PN} += "${libdir}/swift/**"
 INSANE_SKIP_${PN} = "file-rdeps"
