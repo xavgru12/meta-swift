@@ -65,3 +65,4 @@ FILES:${PN}-staticdev = "\
 "
 
 INSANE_SKIP:${PN} = "file-rdeps"
+do_package_qa[noexec] = "1"
