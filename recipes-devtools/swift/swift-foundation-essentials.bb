@@ -28,10 +28,10 @@ TARGET_LDFLAGS += "-L${STAGING_DIR_TARGET}/usr/lib/swift/linux"
 # Enable Swift parts
 EXTRA_OECMAKE += "-DENABLE_SWIFT=YES"
 EXTRA_OECMAKE += "-DBUILD_SHARED_LIBS=YES"
-EXTRA_OECMAKE += "-D_SwiftFoundationICU_SourceDIR=${WORKDIR}/swift-foundation-icu"
-EXTRA_OECMAKE += "-D_SwiftCollections_SourceDIR=${WORKDIR}/swift-collections"
+EXTRA_OECMAKE += "-D_SwiftFoundationICU_SourceDIR=${UNPACKDIR}/swift-foundation-icu"
+EXTRA_OECMAKE += "-D_SwiftCollections_SourceDIR=${UNPACKDIR}/swift-collections"
 EXTRA_OECMAKE += "-DSwiftFoundation_MODULE_TRIPLE=${SWIFT_TARGET_NAME}"
-EXTRA_OECMAKE += "-DSwiftSyntax_DIR=${WORKDIR}/swift-syntax/cmake/modules"
+EXTRA_OECMAKE += "-DSwiftSyntax_DIR=${UNPACKDIR}/swift-syntax/cmake/modules"
 
 # Ensure the right CPU is targeted
 cmake_do_generate_toolchain_file:append() {
