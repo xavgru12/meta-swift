@@ -38,6 +38,10 @@ SWIFT_C_LINK_FLAGS = "${TARGET_LD_ARCH} -target ${SWIFT_TARGET_NAME} --sysroot $
 SWIFT_CXX_FLAGS = "${SWIFT_C_FLAGS}"
 SWIFT_CXX_LINK_FLAGS = "${SWIFT_C_LINK_FLAGS}"
 
+INHIBIT_PACKAGE_STRIP = "1"
+INHIBIT_SYSROOT_STRIP = "1"
+INHIBIT_PACKAGE_DEBUG_SPLIT = "1"
+
 do_fix_gcc_install_dir() {
     # symbolic links do not work, will not be found by Swift clang driver
     # this is necessary to make the libstdc++ location heuristic work, necessary for C++ interop
@@ -69,7 +73,7 @@ do_configure() {
        -DCMAKE_CXX_COMPILER=${SWIFT_NATIVE_PATH}/clang++ \
        -DLLVM_TARGETS_TO_BUILD="X86;ARM;AArch64" \
        -DLLVM_ENABLE_PROJECTS="llvm" \
-       -DCMAKE_BUILD_TYPE=Release
+       -DCMAKE_BUILD_TYPE=Debug
 
     rm -rf ${SWIFT_BUILDDIR}
     mkdir -p ${SWIFT_BUILDDIR}
@@ -176,7 +180,8 @@ EOF
         -DSWIFT_NATIVE_SWIFT_TOOLS_PATH=${SWIFT_NATIVE_PATH} \
         -DSWIFT_SDK_LINUX_ARCH_${SWIFT_TARGET_ARCH}_PATH=${STAGING_DIR_TARGET}  \
         -DSWIFT_SDK_LINUX_ARCH_${SWIFT_TARGET_ARCH}_LIBC_INCLUDE_DIRECTORY=${STAGING_DIR_TARGET}/usr/include  \
-        -DSWIFT_SDK_LINUX_ARCH_${SWIFT_TARGET_ARCH}_LIBC_ARCHITECTURE_INCLUDE_DIRECTORY=${STAGING_DIR_TARGET}/usr/include
+        -DSWIFT_SDK_LINUX_ARCH_${SWIFT_TARGET_ARCH}_LIBC_ARCHITECTURE_INCLUDE_DIRECTORY=${STAGING_DIR_TARGET}/usr/include \
+        -DCMAKE_BUILD_TYPE=Debug
 }
 
 do_compile() {
