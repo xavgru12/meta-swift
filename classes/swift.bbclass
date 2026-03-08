@@ -2,8 +2,7 @@ inherit swift-common
 
 SWIFT_BUILD_TESTS ?= "${DEBUG_BUILD}"
 
-DEPENDS:append = " swift-stdlib libdispatch swift-foundation"
-DEPENDS:append = " ${@oe.utils.conditional('SWIFT_BUILD_TESTS', '1', ' swift-xctest swift-testing', '', d)}"
+DEPENDS:append = " swift-stdlib libdispatch"
 
 # Depending on the Yocto version, the sources may be in ${UNPACKDIR} or may just need to be placed
 # at ${WORKDIR}/git instead.

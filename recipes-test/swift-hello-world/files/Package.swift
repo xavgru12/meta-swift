@@ -16,12 +16,7 @@ let package = Package(
             name: "hello-world",
             dependencies: [],
             swiftSettings: [
-                .swiftLanguageMode(.v5),
-                .interoperabilityMode(.Cxx),
             ]
         ),
-        .testTarget(
-            name: "hello-world-test",
-            dependencies: []),
     ]
 )

@@ -66,3 +66,15 @@ FILES:${PN}-staticdev = "\
 
 INSANE_SKIP:${PN} = "file-rdeps buildpaths"
 INSANE_SKIP:${PN}-dbg = "buildpaths"
+
+do_install:append() {
+    # create standard lib directories
+    install -d ${D}${libdir}/swift/linux
+
+    # copy built shared libraries into the runtime location
+    cp -f ${LIBDISPATCH_BUILDDIR}/libdispatch.so ${D}${libdir}/swift/linux/
+    cp -f ${LIBDISPATCH_BUILDDIR}/libswiftDispatch.so ${D}${libdir}/swift/linux/
+    cp -f ${LIBDISPATCH_BUILDDIR}/libBlocksRuntime.so ${D}${libdir}/swift/linux/
+
+}
+
