@@ -160,6 +160,7 @@ set(ICU_UC_LIBRARIES ${STAGING_DIR_TARGET}/usr/lib/libicuuc.so)
 set(ICU_UC_INCLUDE_DIRS ${STAGING_DIR_TARGET}/usr/include)
 set(LibRT_LIBRARIES ${STAGING_DIR_TARGET}/usr/lib/librt.a)
 set(ZLIB_LIBRARY ${STAGING_DIR_TARGET}/usr/lib/libz.so)
+set(SWIFT_PATH_TO_SWIFT_SYNTAX_SOURCE ${UNPACKDIR}/swift-syntax)
 EOF
 
     # pthreads does not work with armv7, so use c11 threading package in lieu
@@ -203,7 +204,7 @@ do_install:prepend() {
 do_install() {
     # install bridging and custom executor headers
     install -d ${D}${includedir}/swift
-    install -m 0644 ${SWIFT_BUILDDIR}/include/swift/*.h ${D}${includedir}/swift
+    #install -m 0644 ${SWIFT_BUILDDIR}/include/swift/*.h ${D}${includedir}/swift
     install -m 0644 ${S}/lib/ClangImporter/SwiftBridging/swift/bridging* ${D}${includedir}/swift
 
     # install libraries
