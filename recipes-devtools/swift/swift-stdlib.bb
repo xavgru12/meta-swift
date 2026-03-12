@@ -7,12 +7,14 @@ LIC_FILES_CHKSUM = "file://${S}/LICENSE.txt;md5=f6c482a0548ea60d6c2e015776534035
 require swift-version.inc
 PV = "${SWIFT_VERSION}"
 
-SRC_URI = "git://github.com/apple/swift.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1 \
+SRC_URI = "git://github.com/apple/swift.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1;name=swift \
         file://0001-Float16.patch \
         file://fix_modulemap.sh \
         file://cmake-configure-swift-stdlib.sh \
         "
-SRC_URI += "git://github.com/apple/swift-corelibs-libdispatch.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1;destsuffix=libdispatch" 
+SRC_URI += "git://github.com/apple/swift-corelibs-libdispatch.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1;destsuffix=libdispatch;name=libdispatch" 
+
+SRCREV_FORMAT = "swift libdispatch"
 
 S = "${WORKDIR}/git"
 SWIFT_BUILDDIR = "${S}/build"
@@ -21,7 +23,7 @@ DEPENDS += " swift-native swift-llvm-native libgcc gcc glibc libxml2"
 
 inherit swift-cmake-base
 
-SWIFT_GGC_VERSION = "9.3.0"
+SWIFT_GGC_VERSION = "13.3.0"
 
 EXTRA_INCLUDE_FLAGS = "\
     -I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GGC_VERSION}/${TARGET_SYS} \
@@ -133,6 +135,6 @@ do_install() {
     cp -rf ${SWIFT_BUILDDIR}/lib/swift ${D}${libdir}/
 }
 
-FILES_${PN} = "${libdir}/swift/*"
+FILES:${PN} += "${libdir}/swift/**"
 INSANE_SKIP_${PN} = "file-rdeps"
 do_package_qa[noexec] = "1"
