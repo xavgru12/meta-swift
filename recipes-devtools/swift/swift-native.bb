@@ -22,7 +22,7 @@ SWIFT_HOST_ARCH = "${@swift_host_arch(d)}"
 
 #tag=${SWIFT_TAG}
 SRC_DIR = "swift-project"
-SRC_URI = "git://github.com/swiftlang/swift.git;tag=${SWIFT_TAG};nobranch=1;protocol=https;destsuffix=git"
+SRC_URI = "git://github.com/swiftlang/swift.git;tag=${SWIFT_TAG};nobranch=1;protocol=https;destsuffix=git/swift-project/swift"
 SRC_URI += "file://hashes"
 
 DEPENDS += "\
@@ -37,7 +37,7 @@ DEPENDS += "\
 "
 RDEPENDS:${PN} = "ncurses-native"
 
-S = "${WORKDIR}/git"
+S = "${WORKDIR}/git/swift-project/swift"
 B = "${WORKDIR}/build"
 
 inherit native
@@ -45,7 +45,7 @@ do_configure[network] = "1"
 do_configure() {
     cd ${S}
     cp ${WORKDIR}/hashes ${S}/hashes
-    ./utils/update-checkout --clone --scheme repro --config hashes
+    ./utils/update-checkout --clone --scheme repro --config hashes || true     
 }
 
 do_compile() {
