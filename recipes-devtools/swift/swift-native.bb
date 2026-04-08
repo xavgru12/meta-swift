@@ -23,6 +23,7 @@ SWIFT_HOST_ARCH = "${@swift_host_arch(d)}"
 #tag=${SWIFT_TAG}
 SRC_DIR = "swift-project"
 SRC_URI = "git://github.com/swiftlang/swift.git;tag=${SWIFT_TAG};nobranch=1;protocol=https;destsuffix=git"
+SRC_URI += "file://hashes"
 
 DEPENDS += "\
     cmake-native \
@@ -43,14 +44,19 @@ inherit native
 do_configure[network] = "1"
 do_configure() {
     cd ${S}
-    ./utils/update-checkout --clone
+    cp ${WORKDIR}/hashes ${S}/hashes
+    ./utils/update-checkout --clone --scheme repro --config hashes
 }
 
 do_compile() {
+    #cd ${S}
+    #./utils/build-script \
+    #    --release \
+    #    --bootstrapping bootstrapping --reconfigure
+
     cd ${S}
-    ./utils/build-script \
-        --release \
-        --bootstrapping bootstrapping --reconfigure
+    ./utils/build-script --preset bootstrap_stage0 build_subdir=bootstrap_stage0 install_destdir=${B}/stage0 && \
+    PATH="${B}/stage0/usr/bin:$PATH" ./utils/build-script --preset bootstrap_stage2 build_subdir=bootstrap_stage2 install_destdir=${B}/stage2
 }
 
 ########################################################################
