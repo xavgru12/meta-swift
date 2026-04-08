@@ -1,0 +1,373 @@
+{
+    "ssh-clone-pattern": "git@github.com:%s.git",
+    "https-clone-pattern": "https://github.com/%s.git",
+    "repos": {
+        "swift": {
+            "remote": {
+                "id": "swiftlang/swift"
+            }
+        },
+        "cmark": {
+            "remote": {
+                "id": "swiftlang/swift-cmark"
+            }
+        },
+        "llbuild": {
+            "remote": {
+                "id": "swiftlang/swift-llbuild"
+            }
+        },
+        "swift-build": {
+            "remote": {
+                "id": "swiftlang/swift-build"
+            }
+        },
+        "swift-argument-parser": {
+            "remote": {
+                "id": "apple/swift-argument-parser"
+            }
+        },
+        "swift-async-algorithms": {
+            "remote": {
+                "id": "apple/swift-async-algorithms"
+            }
+        },
+        "swift-atomics": {
+            "remote": {
+                "id": "apple/swift-atomics"
+            }
+        },
+        "swift-collections": {
+            "remote": {
+                "id": "apple/swift-collections"
+            }
+        },
+        "swift-crypto": {
+            "remote": {
+                "id": "apple/swift-crypto"
+            }
+        },
+        "swift-certificates": {
+            "remote": {
+                "id": "apple/swift-certificates"
+            }
+        },
+        "swift-asn1": {
+            "remote": {
+                "id": "apple/swift-asn1"
+            }
+        },
+        "swift-driver": {
+            "remote": {
+                "id": "swiftlang/swift-driver"
+            }
+        },
+        "swift-log": {
+            "remote": {
+                "id": "apple/swift-log"
+            }
+        },
+        "swift-numerics": {
+            "remote": {
+                "id": "apple/swift-numerics"
+            }
+        },
+        "swift-toolchain-sqlite": {
+            "remote": {
+                "id": "swiftlang/swift-toolchain-sqlite"
+            }
+        },
+        "swift-tools-protocols": {
+            "remote": {
+                "id": "swiftlang/swift-tools-protocols"
+            }
+        },
+        "swift-tools-support-core": {
+            "remote": {
+                "id": "swiftlang/swift-tools-support-core"
+            }
+        },
+        "swiftpm": {
+            "remote": {
+                "id": "swiftlang/swift-package-manager"
+            }
+        },
+        "swift-syntax": {
+            "remote": {
+                "id": "swiftlang/swift-syntax"
+            }
+        },
+        "swift-system": {
+            "remote": {
+                "id": "apple/swift-system"
+            }
+        },
+        "swift-stress-tester": {
+            "remote": {
+                "id": "swiftlang/swift-stress-tester"
+            }
+        },
+        "swift-testing": {
+            "remote": {
+                "id": "swiftlang/swift-testing"
+            }
+        },
+        "swift-corelibs-xctest": {
+            "remote": {
+                "id": "swiftlang/swift-corelibs-xctest"
+            }
+        },
+        "swift-corelibs-foundation": {
+            "remote": {
+                "id": "swiftlang/swift-corelibs-foundation"
+            }
+        },
+        "swift-foundation-icu": {
+            "remote": {
+                "id": "swiftlang/swift-foundation-icu"
+            }
+        },
+        "swift-foundation": {
+            "remote": {
+                "id": "swiftlang/swift-foundation"
+            }
+        },
+        "swift-corelibs-libdispatch": {
+            "remote": {
+                "id": "swiftlang/swift-corelibs-libdispatch"
+            }
+        },
+        "swift-corelibs-blocksruntime": {
+            "remote": {
+                "id": "swiftlang/swift-corelibs-blocksruntime"
+            }
+        },
+        "swift-integration-tests": {
+            "remote": {
+                "id": "swiftlang/swift-integration-tests"
+            }
+        },
+        "swift-xcode-playground-support": {
+            "remote": {
+                "id": "apple/swift-xcode-playground-support"
+            },
+            "platforms": [
+                "Darwin"
+            ]
+        },
+        "ninja": {
+            "remote": {
+                "id": "ninja-build/ninja"
+            }
+        },
+        "yams": {
+            "remote": {
+                "id": "jpsim/Yams"
+            }
+        },
+        "cmake": {
+            "remote": {
+                "id": "KitWare/CMake"
+            },
+            "platforms": [
+                "Darwin",
+                "Linux"
+            ]
+        },
+        "swift-cmark-gfm": {
+            "remote": {
+                "id": "swiftlang/swift-cmark"
+            }
+        },
+        "indexstore-db": {
+            "remote": {
+                "id": "swiftlang/indexstore-db"
+            }
+        },
+        "sourcekit-lsp": {
+            "remote": {
+                "id": "swiftlang/sourcekit-lsp"
+            }
+        },
+        "swift-format": {
+            "remote": {
+                "id": "swiftlang/swift-format"
+            }
+        },
+        "swift-installer-scripts": {
+            "remote": {
+                "id": "swiftlang/swift-installer-scripts"
+            }
+        },
+        "swift-docc": {
+            "remote": {
+                "id": "swiftlang/swift-docc"
+            }
+        },
+        "swift-lmdb": {
+            "remote": {
+                "id": "swiftlang/swift-lmdb"
+            }
+        },
+        "swift-docc-render-artifact": {
+            "remote": {
+                "id": "swiftlang/swift-docc-render-artifact"
+            }
+        },
+        "swift-docc-symbolkit": {
+            "remote": {
+                "id": "swiftlang/swift-docc-symbolkit"
+            }
+        },
+        "swift-markdown": {
+            "remote": {
+                "id": "swiftlang/swift-markdown"
+            }
+        },
+        "swift-nio": {
+            "remote": {
+                "id": "apple/swift-nio"
+            }
+        },
+        "swift-nio-ssl": {
+            "remote": {
+                "id": "apple/swift-nio-ssl"
+            }
+        },
+        "swift-experimental-string-processing": {
+            "remote": {
+                "id": "swiftlang/swift-experimental-string-processing"
+            }
+        },
+        "swift-sdk-generator": {
+            "remote": {
+                "id": "swiftlang/swift-sdk-generator"
+            }
+        },
+        "swift-llvm-bindings": {
+            "remote": {
+                "id": "swiftlang/swift-llvm-bindings"
+            }
+        },
+        "llvm-project": {
+            "remote": {
+                "id": "swiftlang/llvm-project"
+            }
+        },
+        "wasi-libc": {
+            "remote": {
+                "id": "WebAssembly/wasi-libc"
+            }
+        },
+        "wasmkit": {
+            "remote": {
+                "id": "swiftwasm/WasmKit"
+            }
+        },
+        "curl": {
+            "remote": {
+                "id": "curl/curl"
+            }
+        },
+        "icu": {
+            "remote": {
+                "id": "unicode-org/icu"
+            }
+        },
+        "libxml2": {
+            "remote": {
+                "id": "gnome/libxml2"
+            }
+        },
+        "zlib": {
+            "remote": {
+                "id": "madler/zlib"
+            }
+        },
+        "brotli": {
+            "remote": {
+                "id": "google/brotli"
+            }
+        },
+        "mimalloc": {
+            "remote": {
+                "id": "microsoft/mimalloc"
+            },
+            "platforms": [
+                "Windows"
+            ]
+        },
+        "swift-subprocess": {
+            "remote": {
+                "id": "swiftlang/swift-subprocess"
+            }
+        }
+    },
+    "branch-schemes": {
+        "repro": {
+            "aliases": [
+                "repro"
+            ],
+            "repos": {
+                "brotli": "ed738e842d2fbdf2d6459e39267a633c4a9b2f5d",
+                "cmake": "d88682dff6bf053e5bbdc10accf5d6825303e656",
+                "cmark": "924936d0427cb25a61169739a7660230bffa6ea6",
+                "curl": "83bedbd730d62b83744cc26fa0433d3f6e2e4cd6",
+                "icu": "skip",
+                "indexstore-db": "003ac41513ba291f10ff1a0147ae68588914668d",
+                "libxml2": "2b998a4ffbdfea04fc6a620721abc690a15743af",
+                "llbuild": "e38525ae3519021f014ad91e7bf86e7ae86044f5",
+                "llvm-project": "298a27f46a743333dcfc2355163c9952a78aa0ba",
+                "mimalloc": "skip",
+                "ninja": "79feac0f3e3bc9da9effc586cd5fea41e7550051",
+                "sourcekit-lsp": "da467bdd5659310d55064ee5225a0926c86cbdce",
+                "swift": "92f926e23e6deac5a8d7c45b2e2e0cf75a0cb811",
+                "swift-argument-parser": "309a47b2b1d9b5e991f36961c983ecec72275be3",
+                "swift-asn1": "a54383ada6cecde007d374f58f864e29370ba5c3",
+                "swift-async-algorithms": "6ae9a051f76b81cc668305ceed5b0e0a7fd93d20",
+                "swift-atomics": "cd142fd2f64be2100422d658e7411e39489da985",
+                "swift-build": "fc3609a1658bc5e119dc38906eb8049a9e8b24a1",
+                "swift-certificates": "386001a92200c70fd06217b3ccad58d7226edb84",
+                "swift-cmark-gfm": "skip",
+                "swift-collections": "c11818f3cae0780656baa430b49e7f163f08dffd",
+                "swift-corelibs-blocksruntime": "63319b62157ceb7642d91d42eac22b99555568f8",
+                "swift-corelibs-foundation": "320720354a40503c74ef1ffb73083618bc0a3724",
+                "swift-corelibs-libdispatch": "6cdb083f7f380368e402eee504fb84d9ea0bcd59",
+                "swift-corelibs-xctest": "18494ea84411109c3bc124fe94d93ac2521b30d4",
+                "swift-crypto": "d79c573e1b400d670ed12c0cb29d33f2c0f5ab70",
+                "swift-docc": "da96357898e600cbfc8de48181d103a28328930e",
+                "swift-docc-render-artifact": "943556306878b83a75dca64704c92c9f25f658be",
+                "swift-docc-symbolkit": "89e737aca30bd42a9f7e114e609884267ea6aabe",
+                "swift-driver": "7d6b844f0c2497a997770a11536598b187066be9",
+                "swift-experimental-string-processing": "efe8986824694c53fd5e94a4c634f20b3682baeb",
+                "swift-format": "40a267a23d2d8617269d8ead92206eafccbd6162",
+                "swift-foundation": "60bd7a1d8a730ebdeab2cb037b0519ef3b010ed3",
+                "swift-foundation-icu": "2e2854eee567589ed44c5f3c85c7343e6d91978d",
+                "swift-installer-scripts": "237771308f356e397c09a51c4787c1ef6c5df31f",
+                "swift-integration-tests": "5996e0240cffe96ddf4ffb6c4aae8e3aa2a990e0",
+                "swift-llvm-bindings": "c1fffb92d4f9d7cb98800762631cfa354869fb46",
+                "swift-lmdb": "1ad9a2d80b6fcde498c2242f509bd1be7d667ff8",
+                "swift-log": "e97a6fcb1ab07462881ac165fdbb37f067e205d5",
+                "swift-markdown": "de3e245b6044386b623ecce11d1ccb5fe766e3db",
+                "swift-nio": "359c461e5561d22c6334828806cc25d759ca7aa6",
+                "swift-nio-ssl": "skip",
+                "swift-numerics": "0a5bc04095a675662cf24757cc0640aa2204253b",
+                "swift-sdk-generator": "01e610b9000edc28ff81c7932144e58c6742f07d",
+                "swift-stress-tester": "3f5f86655e32c204ebeb38c0a3a8d1085957c859",
+                "swift-subprocess": "44922dfe46380cd354ca4b0208e717a3e92b13dd",
+                "swift-syntax": "2b59c0c741e9184ab057fd22950b491076d42e91",
+                "swift-system": "61e4ca4b81b9e09e2ec863b00c340eb13497dac6",
+                "swift-testing": "980fec0f03c56f771acfcc5be472d44df9245117",
+                "swift-toolchain-sqlite": "b45b80b943e88db3cb8ddea798fa3fa9912375ff",
+                "swift-tools-protocols": "f86b413a803761408e5e718912c46d75a340801b",
+                "swift-tools-support-core": "dc45701bfc1e4d08b917fd338399b5cfd8810d28",
+                "swift-xcode-playground-support": "skip",
+                "swiftpm": "ca32d33dd7a8b67b1d7c76dc033cd02a9fd36318",
+                "wasi-libc": "3f7eb4c7d6ede4dde3c4bffa6ed14e8d656fe93f",
+                "wasmkit": "827056b014e37da50e2645a7634fddb32e441f32",
+                "yams": "skip",
+                "zlib": "51b7f2abdade71cd9bb0e7a373ef2610ec6f9daf"
+            }
+        }
+    }
+}
