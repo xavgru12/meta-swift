@@ -2,10 +2,10 @@ SUMMARY = "Swift native toolchain for Linux"
 HOMEPAGE = "https://swift.org/install/"
 
 LICENSE = "Apache-2.0"
-LIC_FILES_CHKSUM = "file://${S}/usr/share/swift/LICENSE.txt;md5=f6c482a0548ea60d6c2e015776534035"
+LIC_FILES_CHKSUM = "file://LICENSE.txt;md5=f6c482a0548ea60d6c2e015776534035"
 
 require swift-version.inc
-PV = "${SWIFT_VERSION}"
+PV = "6.2.4"
 
 def swift_native_arch_suffix(d):
     host_arch = d.getVar('HOST_ARCH')
@@ -17,30 +17,42 @@ def swift_native_arch_suffix(d):
 def swift_host_arch(d):
     return swift_native_arch_suffix(d).lstrip('-')
 
-def swift_native_arch_checksum(d):
-    sha256 = {
-      "x86_64": "969b1241a3fd9aa446cb47c1b2e4a7c72a54df9d48ec6f65aed09549095a71f5",
-      "aarch64": "41fa73da20451831b29ddd989d0828f31f7b7e51633cf59249566f356e2b0ca1"
-    }
-
-    host_arch = d.getVar('HOST_ARCH')
-    return sha256[host_arch]
-
 SWIFT_ARCH_SUFFIX = "${@swift_native_arch_suffix(d)}"
 SWIFT_HOST_ARCH = "${@swift_host_arch(d)}"
 
 SWIFT_LINUX_DISTRO = "amazonlinux2"
+#tag=${SWIFT_TAG}
+SRC_DIR = "swift-project"
+SRC_URI = "git://github.com/swiftlang/swift.git;tag=${SWIFT_TAG};nobranch=1;protocol=https;destsuffix=git"
 
-SRC_DIR = "${SWIFT_TAG}-${SWIFT_LINUX_DISTRO}${SWIFT_ARCH_SUFFIX}"
-SRC_URI = "https://download.swift.org/swift-${SWIFT_VERSION}-release/${SWIFT_LINUX_DISTRO}${SWIFT_ARCH_SUFFIX}/${SWIFT_TAG}/${SWIFT_TAG}-${SWIFT_LINUX_DISTRO}${SWIFT_ARCH_SUFFIX}.tar.gz"
-SRC_URI[sha256sum] = "${@swift_native_arch_checksum(d)}"
-
-DEPENDS = "curl"
+DEPENDS += "\
+    cmake-native \
+    ninja-native \
+    python3-native \
+    libxml2-native \
+    zlib-native \
+    curl-native \
+    icu-native \
+    clang-native \
+"
 RDEPENDS:${PN} = "ncurses-native"
 
-S = "${WORKDIR}/${SRC_DIR}"
+S = "${WORKDIR}/git"
+B = "${WORKDIR}/build"
 
 inherit native
+do_configure[network] = "1"
+do_configure() {
+    cd ${S}
+    ./utils/update-checkout --clone
+}
+
+do_compile() {
+    cd ${S}
+    ./utils/build-script \
+        --release \
+        --bootstrapping bootstrapping --reconfigure
+}
 
 ########################################################################
 # This informs bitbake that we want to install a non-default directory #
@@ -70,18 +82,20 @@ PACKAGES = "\
     ${PN}-xctest-dev \
 "
 
-do_install:append () {
+do_install() {
+    TOOLCHAIN_DIR=$(find build -maxdepth 3 -type d -name "swift-linux-*")
+
     install -d ${D}${bindir}
-    cp -r ${S}/usr/bin/* ${D}${bindir}
+    cp -r ${TOOLCHAIN_DIR}/usr/bin/* ${D}${bindir}
 
     install -d ${D}${libdir}
-    cp -rd ${S}/usr/lib/* ${D}${libdir}
+    cp -rd ${TOOLCHAIN_DIR}/usr/lib/* ${D}${libdir}
 
     install -d ${D}${includedir}
-    cp -rd ${S}/usr/include/* ${D}${includedir}
+    cp -rd ${TOOLCHAIN_DIR}/usr/include/* ${D}${includedir}
 
     install -d ${D}${datadir}
-    cp -rd ${S}/usr/share/* ${D}${datadir}
+    cp -rd ${TOOLCHAIN_DIR}/usr/share/* ${D}${datadir}
 }
 
 FILES:${PN} = "\
