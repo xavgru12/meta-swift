@@ -91,6 +91,7 @@ EXTRA_SWIFT_ARGS="-Xlinker -fuse-ld=lld -Xcc -fPIC"
 # This prevents Clang from seeing flags it doesn't understand
 DEBUG_PREFIX_MAP = ""
 
+DEPENDS += "sqlite3-native"
 
 # Add this to ensure BitBake knows we need the lld tool available in the environment
 HOSTTOOLS_NONFATAL += "ld.lld"
@@ -100,6 +101,12 @@ do_compile() {
     # We use -Xlinker because Swift passes these to the link stage.
     # We use -Xcc because Swift passes these to the Clang stage.
 # We explicitly remove -fuse-ld=gold if it exists in any inherited flags
+
+    export CPATH="${STAGING_INCDIR_NATIVE}:${CPATH}"
+    SYSROOT_FLAGS="-I${STAGING_INCDIR_NATIVE} -L${STAGING_LIBDIR_NATIVE}"
+
+    export CC="${STAGING_BINDIR_NATIVE}/clang"
+    export CXX="${STAGING_BINDIR_NATIVE}/clang++"
     export LDFLAGS=$(echo $LDFLAGS | sed 's/-fuse-ld=gold//g' | sed 's/-Wl,[^ ]*//g')
     export CFLAGS=$(echo $CFLAGS | sed 's/-fuse-ld=gold//g')
     export CXXFLAGS=$(echo $CXXFLAGS | sed 's/-fuse-ld=gold//g')
@@ -111,22 +118,23 @@ ln -sf ${STAGING_BINDIR_NATIVE}/ld.lld ${B}/linker-shim/ld.gold
     export PATH="${B}/linker-shim:$PATH"
 
     # Define the Force-Flags
-    EXTRA_CM_ARGS="-DCMAKE_LINKER=${STAGING_BINDIR_NATIVE}/ld.lld \
-                   -DSWIFT_USE_LINKER=lld \
-                   -DLLVM_USE_LINKER=lld"
-    EXTRA_SWIFT_ARGS="-Xlinker -fuse-ld=lld -Xcc -fPIC"
+    EXTRA_SWIFT_ARGS="-Xlinker -fuse-ld=lld -Xcc -fPIC -Xcc -I${STAGING_INCDIR_NATIVE}"
 
     # Match the CMake logic from meta-swift but for native
     EXTRA_CM_ARGS="-DCMAKE_SKIP_RPATH=TRUE \
                    -DCMAKE_LINKER=${STAGING_BINDIR_NATIVE}/ld.lld \
                    -DSWIFT_USE_LINKER=lld \
                    -DLLVM_USE_LINKER=lld \
-                   -DCMAKE_C_FLAGS=-fPIC \
-                   -DCMAKE_CXX_FLAGS=-fPIC"
+                   -DCMAKE_C_FLAGS='-fPIC ${SYSROOT_FLAGS}' \
+                   -DCMAKE_CXX_FLAGS='-fPIC ${SYSROOT_FLAGS}' \
+                   -DSQLite3_INCLUDE_DIR=${STAGING_INCDIR_NATIVE} \
+                   -DSQLite3_LIBRARY=${STAGING_LIBDIR_NATIVE}/libsqlite3.so"
 
 
     EXTRA_LLVM_CM_ARGS="-DLLVM_USE_LINKER=lld \
-                        -DSANITIZER_COMMON_LINK_FLAGS=-fuse-ld=lld"
+                        -DSANITIZER_COMMON_LINK_FLAGS=-fuse-ld=lld \
+    -DCMAKE_EXE_LINKER_FLAGS='-fuse-ld=lld -L${STAGING_LIBDIR_NATIVE}' \
+    -DCMAKE_SHARED_LINKER_FLAGS='-fuse-ld=lld -L${STAGING_LIBDIR_NATIVE}'"
 
     cd ${S}
     ./utils/build-script --preset bootstrap_stage0 \
