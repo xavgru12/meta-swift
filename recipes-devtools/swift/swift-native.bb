@@ -55,33 +55,93 @@ do_configure() {
 #LDFLAGS:remove = "-Wl,-O1"
 
 # Clear the "Default" flags that Yocto injects into every CC call
-TARGET_CFLAGS = ""
-TARGET_CXXFLAGS = ""
-TARGET_CPPFLAGS = ""
-TARGET_LDFLAGS = ""
+#TARGET_CFLAGS = ""
+#TARGET_CXXFLAGS = ""
+#TARGET_CPPFLAGS = ""
+#TARGET_LDFLAGS = ""
+#
+## Clear the Native-specific versions
+#BUILD_CFLAGS = ""
+#BUILD_CXXFLAGS = ""
+#BUILD_CPPFLAGS = ""
+#BUILD_LDFLAGS = ""
 
-# Clear the Native-specific versions
-BUILD_CFLAGS = ""
-BUILD_CXXFLAGS = ""
-BUILD_CPPFLAGS = ""
-BUILD_LDFLAGS = ""
+# Force-clear these at the highest priority
+# Swift's internal build-script and its generated libraries (like libdispatch)
+# are incompatible with these standard Yocto optimizations.
+BUILD_LDFLAGS:remove = "-Wl,-O1"
+BUILD_LDFLAGS:remove = "-Wl,--hash-style=gnu"
+BUILD_LDFLAGS:remove = "-Wl,--as-needed"
+
+# Remove the specific GNU linker flags that the Swift driver rejects
+BUILD_LDFLAGS:remove = "-Wl,--enable-new-dtags"
+
+# This is the big one: Remove the RPATHs that Yocto injects automatically
+# which caused the "unknown argument: -Wl,-rpath" errors.
+BUILD_LDFLAGS:remove = "-Wl,-rpath-link,${STAGING_LIBDIR_NATIVE}"
+BUILD_LDFLAGS:remove = "-Wl,-rpath-link,${STAGING_DIR_NATIVE}/lib"
+BUILD_LDFLAGS:remove = "-Wl,-rpath,${STAGING_LIBDIR_NATIVE}"
+BUILD_LDFLAGS:remove = "-Wl,-rpath,${STAGING_DIR_NATIVE}/lib"
+
+# Explicitly use lld. The error you had earlier (relocation PC32) 
+# is almost always solved by using lld instead of the default ld.bfd.
+EXTRA_OECMAKE:append = " -DSWIFT_USE_LINKER=lld -DLLVM_USE_LINKER=lld"
+# Inside your do_compile
+EXTRA_SWIFT_ARGS="-Xlinker -fuse-ld=lld -Xcc -fPIC"
+# This prevents Clang from seeing flags it doesn't understand
+DEBUG_PREFIX_MAP = ""
+
+
+# Add this to ensure BitBake knows we need the lld tool available in the environment
+HOSTTOOLS_NONFATAL += "ld.lld"
 
 do_compile() {
-    #cd ${S}
-    #./utils/build-script \
-    #    --release \
-    #    --bootstrapping bootstrapping --reconfigure
-#    export LDFLAGS=""
-#    export CFLAGS=""
-#    export CXXFLAGS=""
-EXTRA_CM_ARGS="-DCMAKE_SKIP_RPATH=TRUE \
-                   -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
-                   -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
+    # Force the use of LLD and PIC. 
+    # We use -Xlinker because Swift passes these to the link stage.
+    # We use -Xcc because Swift passes these to the Clang stage.
+# We explicitly remove -fuse-ld=gold if it exists in any inherited flags
+    export LDFLAGS=$(echo $LDFLAGS | sed 's/-fuse-ld=gold//g' | sed 's/-Wl,[^ ]*//g')
+    export CFLAGS=$(echo $CFLAGS | sed 's/-fuse-ld=gold//g')
+    export CXXFLAGS=$(echo $CXXFLAGS | sed 's/-fuse-ld=gold//g')
+
+# Path Interception: Hijack any call to 'ld'
+    mkdir -p ${B}/linker-shim
+    ln -sf ${STAGING_BINDIR_NATIVE}/ld.lld ${B}/linker-shim/ld
+ln -sf ${STAGING_BINDIR_NATIVE}/ld.lld ${B}/linker-shim/ld.gold
+    export PATH="${B}/linker-shim:$PATH"
+
+    # Define the Force-Flags
+    EXTRA_CM_ARGS="-DCMAKE_LINKER=${STAGING_BINDIR_NATIVE}/ld.lld \
+                   -DSWIFT_USE_LINKER=lld \
+                   -DLLVM_USE_LINKER=lld"
+    EXTRA_SWIFT_ARGS="-Xlinker -fuse-ld=lld -Xcc -fPIC"
+
+    # Match the CMake logic from meta-swift but for native
+    EXTRA_CM_ARGS="-DCMAKE_SKIP_RPATH=TRUE \
+                   -DCMAKE_LINKER=${STAGING_BINDIR_NATIVE}/ld.lld \
+                   -DSWIFT_USE_LINKER=lld \
+                   -DLLVM_USE_LINKER=lld \
                    -DCMAKE_C_FLAGS=-fPIC \
                    -DCMAKE_CXX_FLAGS=-fPIC"
+
+
+    EXTRA_LLVM_CM_ARGS="-DLLVM_USE_LINKER=lld \
+                        -DSANITIZER_COMMON_LINK_FLAGS=-fuse-ld=lld"
+
     cd ${S}
-    ./utils/build-script --preset bootstrap_stage0 build_subdir=bootstrap_stage0 install_destdir=${B}/stage0 --extra-cmake-options="${EXTRA_CM_ARGS}" && \
-    PATH="${B}/stage0/usr/bin:$PATH" ./utils/build-script --preset bootstrap_stage2 build_subdir=bootstrap_stage2 install_destdir=${B}/stage2 --extra-cmake-options="${EXTRA_CM_ARGS}"
+    ./utils/build-script --preset bootstrap_stage0 \
+        build_subdir=bootstrap_stage0 \
+        install_destdir=${B}/stage0 \
+        --extra-cmake-options="${EXTRA_CM_ARGS}" \
+        --extra-llvm-cmake-options="${EXTRA_LLVM_CM_ARGS}" \
+        --extra-swift-args="${EXTRA_SWIFT_ARGS}" && \
+    PATH="${B}/stage0/usr/bin:$PATH" ./utils/build-script \
+        --preset bootstrap_stage2 \
+        build_subdir=bootstrap_stage2 \
+        install_destdir=${B}/stage2 \
+        --extra-cmake-options="${EXTRA_CM_ARGS}" --extra-swift-args="${EXTRA_SWIFT_ARGS}" \
+        --extra-llvm-cmake-options="${EXTRA_LLVM_CM_ARGS}" 
+
 }
 
 ########################################################################
