@@ -46,17 +46,42 @@ do_configure() {
     cd ${S}
     cp ${WORKDIR}/hashes ${S}/hashes
     ./utils/update-checkout --clone --scheme repro --config hashes || true     
+    git checkout 92f926e23e6deac5a8d7c45b2e2e0cf75a0cb811
 }
+
+#LDFLAGS:remove = "-Wl,--enable-new-dtags"
+#LDFLAGS:remove = "-Wl,-rpath-link,*"
+#LDFLAGS:remove = "-Wl,-rpath,*"
+#LDFLAGS:remove = "-Wl,-O1"
+
+# Clear the "Default" flags that Yocto injects into every CC call
+TARGET_CFLAGS = ""
+TARGET_CXXFLAGS = ""
+TARGET_CPPFLAGS = ""
+TARGET_LDFLAGS = ""
+
+# Clear the Native-specific versions
+BUILD_CFLAGS = ""
+BUILD_CXXFLAGS = ""
+BUILD_CPPFLAGS = ""
+BUILD_LDFLAGS = ""
 
 do_compile() {
     #cd ${S}
     #./utils/build-script \
     #    --release \
     #    --bootstrapping bootstrapping --reconfigure
-
+#    export LDFLAGS=""
+#    export CFLAGS=""
+#    export CXXFLAGS=""
+EXTRA_CM_ARGS="-DCMAKE_SKIP_RPATH=TRUE \
+                   -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
+                   -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
+                   -DCMAKE_C_FLAGS=-fPIC \
+                   -DCMAKE_CXX_FLAGS=-fPIC"
     cd ${S}
-    ./utils/build-script --preset bootstrap_stage0 build_subdir=bootstrap_stage0 install_destdir=${B}/stage0 && \
-    PATH="${B}/stage0/usr/bin:$PATH" ./utils/build-script --preset bootstrap_stage2 build_subdir=bootstrap_stage2 install_destdir=${B}/stage2
+    ./utils/build-script --preset bootstrap_stage0 build_subdir=bootstrap_stage0 install_destdir=${B}/stage0 --extra-cmake-options="${EXTRA_CM_ARGS}" && \
+    PATH="${B}/stage0/usr/bin:$PATH" ./utils/build-script --preset bootstrap_stage2 build_subdir=bootstrap_stage2 install_destdir=${B}/stage2 --extra-cmake-options="${EXTRA_CM_ARGS}"
 }
 
 ########################################################################
