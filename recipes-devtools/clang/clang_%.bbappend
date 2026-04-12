@@ -1,0 +1,5 @@
+do_populate_sysroot:class-native:clang-native[noexec] = "1"
+SYSROOT_DIRS:class-native:clang-native = ""
+SYSROOT_DIRS_NATIVE:class-native:clang-native = ""
+SYSROOT_DIRS_NATIVE:pn-clang-native = ""
+do_populate_sysroot:pn-clang-native[noexec] = "1"

@@ -22,6 +22,32 @@ BUILD_DIR = "${B}/${BUILD_MODE}"
 # Additional parameters to pass to SPM
 EXTRA_OESWIFT ?= ""
 
+# sources/meta-swift/classes/swift-utils.bbclass
+
+python () {
+    import os
+    import subprocess
+
+    # Logic to find the path
+    # We use RECIPE_SYSROOT as a starting point to navigate the workdir
+    base_path = d.getVar('RECIPE_SYSROOT')
+    if base_path:
+        search_path = os.path.join(base_path, "../../../swift-native")
+        cmd = f"find {search_path} -type d -path '*/recipe-sysroot-native/usr/lib' 2>/dev/null | head -n 1"
+        
+        try:
+            found_path = subprocess.check_output(cmd, shell=True).decode('utf-8').strip()
+            if found_path:
+                # This makes ${SWIFT_LIB_DIR} available in Bitbake
+                d.setVar('SWIFT_LIB_DIR', found_path)
+                
+                # This exports it to the Shell environment for tasks like do_compile
+                d.appendVar('__export_props', ' LD_LIBRARY_PATH') 
+                d.appendVar('LD_LIBRARY_PATH', f":{found_path}")
+        except:
+            pass
+}
+
 do_fix_gcc_install_dir() {
     # symbolic links do not work, will not be found by Swift clang driver
     # this is necessary to make the libstdc++ location heuristic work, necessary for C++ interop
@@ -66,7 +92,34 @@ python do_swift_package_resolve() {
     b = d.getVar('B')
     recipe_sysroot_native = d.getVar("STAGING_DIR_NATIVE", True)
 
+    recipe_sysroot = d.getVar('RECIPE_SYSROOT')
+    tmpdir = d.getVar('TMPDIR')
     env = os.environ.copy()
+
+# --- Start Swift Lib Discovery ---
+    # We look into the x86_64-linux/swift-native work directory for libraries
+    swift_native_lib_base = os.path.join(tmpdir, "work/x86_64-linux/swift-native")
+    
+    try:
+        # Dynamically find the exact lib directory
+        find_cmd = f"find {swift_native_lib_base} -type d -path '*/recipe-sysroot-native/usr/lib' 2>/dev/null | head -n 1"
+        swift_lib_dir = subprocess.check_output(find_cmd, shell=True).decode('utf-8').strip()
+        
+        if swift_lib_dir and os.path.exists(swift_lib_dir):
+            # Prepend the found directory to LD_LIBRARY_PATH
+            existing_ld_path = env.get('LD_LIBRARY_PATH', '')
+            env['LD_LIBRARY_PATH'] = f"{swift_lib_dir}:{existing_ld_path}".strip(':')
+            
+            # Also add the current recipe's native libs as a fallback
+            native_lib_dir = os.path.join(recipe_sysroot_native, "usr/lib")
+            env['LD_LIBRARY_PATH'] = f"{env['LD_LIBRARY_PATH']}:{native_lib_dir}"
+            
+            bb.note(f"Swift-Package-Resolve: Setting LD_LIBRARY_PATH to {env['LD_LIBRARY_PATH']}")
+        else:
+            bb.warn(f"Swift-Package-Resolve: Could not locate swift-native libraries in {swift_native_lib_base}")
+    except Exception as e:
+        bb.warn(f"Swift-Package-Resolve: Error during library discovery: {e}")
+    # --- End Swift Lib Discovery ---
 
     ssh_auth_sock = d.getVar('BB_ORIGENV').get('SSH_AUTH_SOCK')
     if ssh_auth_sock:

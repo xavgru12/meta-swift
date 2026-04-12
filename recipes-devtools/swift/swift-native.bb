@@ -35,7 +35,10 @@ DEPENDS += "\
     icu-native \
     clang-native \
 "
+
 RDEPENDS:${PN} = "ncurses-native"
+RDEPENDS:${PN}:remove = "clang-native"
+
 
 S = "${WORKDIR}/git/swift-project/swift"
 B = "${WORKDIR}/build"
@@ -46,6 +49,7 @@ do_configure() {
     cd ${S}
     cp ${WORKDIR}/hashes ${S}/hashes
     ./utils/update-checkout --clone --scheme repro --config hashes || true     
+    git fetch
     git checkout 92f926e23e6deac5a8d7c45b2e2e0cf75a0cb811
 }
 
@@ -96,6 +100,8 @@ DEPENDS += "sqlite3-native"
 # Add this to ensure BitBake knows we need the lld tool available in the environment
 HOSTTOOLS_NONFATAL += "ld.lld"
 
+#CLANG_BIN_DIR="${RECIPE_SYSROOT}/../../../clang-native/*/recipe-sysroot-native/usr/bin"
+
 do_compile() {
     # Force the use of LLD and PIC. 
     # We use -Xlinker because Swift passes these to the link stage.
@@ -105,16 +111,40 @@ do_compile() {
     export CPATH="${STAGING_INCDIR_NATIVE}:${CPATH}"
     SYSROOT_FLAGS="-I${STAGING_INCDIR_NATIVE} -L${STAGING_LIBDIR_NATIVE}"
 
-    export CC="${STAGING_BINDIR_NATIVE}/clang"
-    export CXX="${STAGING_BINDIR_NATIVE}/clang++"
+    CLANG_BASE="${RECIPE_SYSROOT}/../../../clang-native"
+
+    CLANG_BIN_DIR=$(find "${CLANG_BASE}" -type d -path "*/recipe-sysroot-native/usr/bin" 2>/dev/null | head -n 1)
+
+    echo "CLANG_BIN_DIR=$CLANG_BIN_DIR"
+
+    find "$CLANG_BIN_DIR" -type f
+
+    CLANG_LIB_DIR=$(dirname "$CLANG_BIN_DIR")/lib
+
+    export LD_LIBRARY_PATH="${CLANG_LIB_DIR}:${LD_LIBRARY_PATH}"
+
+    echo "CLANG_LIB_DIR=$CLANG_LIB_DIR"
+
+
+   CLANG_LLD_DIR=$(find ${TMPDIR}/work -type d -path "*/clang-native/*/build/bin" | head -n 1)
+
+    echo "CLANG_LLD_DIR=$CLANG_LLD_DIR"
+
+    find "$CLANG_LLD_DIR" -name "ld.lld"
+
+    export LD="${CLANG_LLD_DIR}/ld.lld"
+
+    export PATH="${CLANG_BIN_DIR}:$PATH"
+    export CC="${CLANG_BIN_DIR}/clang"
+    export CXX="${CLANG_BIN_DIR}/clang++"
     export LDFLAGS=$(echo $LDFLAGS | sed 's/-fuse-ld=gold//g' | sed 's/-Wl,[^ ]*//g')
     export CFLAGS=$(echo $CFLAGS | sed 's/-fuse-ld=gold//g')
     export CXXFLAGS=$(echo $CXXFLAGS | sed 's/-fuse-ld=gold//g')
 
 # Path Interception: Hijack any call to 'ld'
     mkdir -p ${B}/linker-shim
-    ln -sf ${STAGING_BINDIR_NATIVE}/ld.lld ${B}/linker-shim/ld
-ln -sf ${STAGING_BINDIR_NATIVE}/ld.lld ${B}/linker-shim/ld.gold
+    ln -sf ${CLANG_LLD_DIR}/ld.lld ${B}/linker-shim/ld
+ln -sf ${CLANG_LLD_DIR}/ld.lld ${B}/linker-shim/ld.gold
     export PATH="${B}/linker-shim:$PATH"
 
     # Define the Force-Flags
@@ -122,7 +152,7 @@ ln -sf ${STAGING_BINDIR_NATIVE}/ld.lld ${B}/linker-shim/ld.gold
 
     # Match the CMake logic from meta-swift but for native
     EXTRA_CM_ARGS="-DCMAKE_SKIP_RPATH=TRUE \
-                   -DCMAKE_LINKER=${STAGING_BINDIR_NATIVE}/ld.lld \
+                   -DCMAKE_LINKER=${CLANG_LLD_DIR}/ld.lld \
                    -DSWIFT_USE_LINKER=lld \
                    -DLLVM_USE_LINKER=lld \
                    -DCMAKE_C_FLAGS='-fPIC ${SYSROOT_FLAGS}' \
@@ -181,19 +211,17 @@ PACKAGES = "\
 "
 
 do_install() {
-    TOOLCHAIN_DIR=$(find build -maxdepth 3 -type d -name "swift-linux-*")
-
     install -d ${D}${bindir}
-    cp -r ${TOOLCHAIN_DIR}/usr/bin/* ${D}${bindir}
+    cp -r ${B}/stage2/usr/bin/* ${D}${bindir}
 
     install -d ${D}${libdir}
-    cp -rd ${TOOLCHAIN_DIR}/usr/lib/* ${D}${libdir}
+    cp -rd ${B}/stage2/usr/lib/* ${D}${libdir}
 
     install -d ${D}${includedir}
-    cp -rd ${TOOLCHAIN_DIR}/usr/include/* ${D}${includedir}
+    cp -rd ${B}/stage2/usr/include/* ${D}${includedir}
 
     install -d ${D}${datadir}
-    cp -rd ${TOOLCHAIN_DIR}/usr/share/* ${D}${datadir}
+    cp -rd ${B}/stage2/usr/share/* ${D}${datadir}
 }
 
 FILES:${PN} = "\

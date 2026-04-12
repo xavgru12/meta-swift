@@ -2,6 +2,8 @@ SUMMARY = "swift-testing"
 DESCRIPTION = "A package with expressive and intuitive APIs that make testing your Swift code a breeze."
 HOMEPAGE = "https://github.com/swiftlang/swift-testing"
 
+#DEPENDS += "swift-native"
+
 SWIFT_BUILD_TESTS = "0"
 
 LICENSE = "Apache-2.0" 
