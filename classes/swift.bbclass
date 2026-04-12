@@ -185,8 +185,8 @@ python swift_do_configure() {
             "-I${STAGING_INCDIR}",
             "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION}",
             "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION}/${TARGET_SYS}",
-            "-I${STAGING_DIR_NATIVE}/usr/lib/clang/17/include",
-            "-I${STAGING_DIR_NATIVE}/usr/lib/clang/17/include-fixed"
+            "-I${STAGING_DIR_NATIVE}/usr/lib/clang/${SWIFT_CLANG_VERSION}/include",
+            "-I${STAGING_DIR_NATIVE}/usr/lib/clang/${SWIFT_CLANG_VERSION}/include-fixed"
         ],
         "extra-swiftc-flags":[
             "-target", "${SWIFT_TARGET_NAME}",
@@ -197,12 +197,11 @@ python swift_do_configure() {
             "-resource-dir", "${STAGING_DIR_TARGET}/usr/lib/swift",
             "-module-cache-path", "${B}/${BUILD_MODE}/ModuleCache",
             "-sdk", "${STAGING_DIR_TARGET}",
-
             "-I${STAGING_INCDIR}",
             "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION}",
             "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION}/${TARGET_SYS}",
-            "-I${STAGING_DIR_NATIVE}/usr/lib/clang/17/include",
-            "-I${STAGING_DIR_NATIVE}/usr/lib/clang/17/include-fixed",
+            "-I${STAGING_DIR_NATIVE}/usr/lib/clang/${SWIFT_CLANG_VERSION}/include",
+            "-I${STAGING_DIR_NATIVE}/usr/lib/clang/${SWIFT_CLANG_VERSION}/include-fixed",
 
             "-Xlinker", "-rpath", "-Xlinker", "/usr/lib/swift/linux",
 
@@ -211,7 +210,6 @@ python swift_do_configure() {
             "-Xlinker", "-L${STAGING_DIR_TARGET}/usr/lib",
             "-Xlinker", "-L${STAGING_DIR_TARGET}/usr/lib/swift/linux",
             "-Xlinker", "-L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION}",
-
             "-Xlinker", "--build-id=sha1",
 
             "-Xclang-linker", "-B${STAGING_DIR_TARGET}/usr/lib",
