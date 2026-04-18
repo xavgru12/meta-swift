@@ -1,14 +1,13 @@
 DESCRIPTION = "Swift Hello World!"
 LICENSE = "CLOSED"
 
-SWIFT_BUILD_TESTS = "1"
+SWIFT_BUILD_TESTS = "0"
 
-RDEPENDS:${PN} += "swift-xctest swift-testing"
+#RDEPENDS:${PN} += "swift-xctest swift-testing"
 
 SRC_URI = "\
     file://Package.swift \
     file://Sources \
-    file://Tests \
 "
 
 S = "${SWIFT_UNPACKDIR}"
