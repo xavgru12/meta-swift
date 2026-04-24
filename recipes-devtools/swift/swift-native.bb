@@ -34,13 +34,9 @@ DEPENDS += "\
     curl-native \
     icu-native \
     ncurses-native \
+    clang-native \
+    sqlite3-native \
 "
-PREFERRED_PROVIDER_clang = "swift-native"
-do_compile[depends] += "clang-native:do_populate_sysroot"
-
-RDEPENDS:${PN} = "ncurses-native"
-RDEPENDS:${PN}:remove = "clang-native"
-
 
 S = "${WORKDIR}/git/swift-project/swift"
 B = "${WORKDIR}/build"
@@ -55,26 +51,6 @@ do_configure() {
     git checkout 92f926e23e6deac5a8d7c45b2e2e0cf75a0cb811
 }
 
-#LDFLAGS:remove = "-Wl,--enable-new-dtags"
-#LDFLAGS:remove = "-Wl,-rpath-link,*"
-#LDFLAGS:remove = "-Wl,-rpath,*"
-#LDFLAGS:remove = "-Wl,-O1"
-
-# Clear the "Default" flags that Yocto injects into every CC call
-#TARGET_CFLAGS = ""
-#TARGET_CXXFLAGS = ""
-#TARGET_CPPFLAGS = ""
-#TARGET_LDFLAGS = ""
-#
-## Clear the Native-specific versions
-#BUILD_CFLAGS = ""
-#BUILD_CXXFLAGS = ""
-#BUILD_CPPFLAGS = ""
-#BUILD_LDFLAGS = ""
-
-# Force-clear these at the highest priority
-# Swift's internal build-script and its generated libraries (like libdispatch)
-# are incompatible with these standard Yocto optimizations.
 BUILD_LDFLAGS:remove = "-Wl,-O1"
 BUILD_LDFLAGS:remove = "-Wl,--hash-style=gnu"
 BUILD_LDFLAGS:remove = "-Wl,--as-needed"
@@ -95,40 +71,19 @@ EXTRA_OECMAKE:append = " -DSWIFT_USE_LINKER=lld -DLLVM_USE_LINKER=lld"
 # Inside your do_compile
 EXTRA_SWIFT_ARGS="-Xlinker -fuse-ld=lld -Xcc -fPIC"
 # This prevents Clang from seeing flags it doesn't understand
-DEBUG_PREFIX_MAP = ""
-
-DEPENDS += "sqlite3-native"
 
 # Add this to ensure BitBake knows we need the lld tool available in the environment
 HOSTTOOLS_NONFATAL += "ld.lld"
 
-#CLANG_BIN_DIR="${RECIPE_SYSROOT}/../../../clang-native/*/recipe-sysroot-native/usr/bin"
 
 do_compile() {
-    # Force the use of LLD and PIC. 
-    # We use -Xlinker because Swift passes these to the link stage.
-    # We use -Xcc because Swift passes these to the Clang stage.
-# We explicitly remove -fuse-ld=gold if it exists in any inherited flags
 
     export CPATH="${STAGING_INCDIR_NATIVE}:${CPATH}"
     SYSROOT_FLAGS="-I${STAGING_INCDIR_NATIVE} -L${STAGING_LIBDIR_NATIVE}"
 
-    CLANG_BASE="${RECIPE_SYSROOT}/../../../clang-native"
-
-    CLANG_BIN_DIR=$(find "${CLANG_BASE}" -type d -path "*/recipe-sysroot-native/usr/bin" 2>/dev/null | head -n 1)
-
-    echo "CLANG_BIN_DIR=$CLANG_BIN_DIR"
-
-    find "$CLANG_BIN_DIR" -type f
-
-    CLANG_LIB_DIR=$(dirname "$CLANG_BIN_DIR")/lib
-
     export LD_LIBRARY_PATH="${STAGING_BINDIR_NATIVE}/clang-special/lib:${LD_LIBRARY_PATH}"
 
-    echo "CLANG_LIB_DIR=$CLANG_LIB_DIR"
-
-
-   CLANG_LLD_DIR=$(find ${TMPDIR}/work -type d -path "*/clang-native/*/build/bin" | head -n 1)
+    CLANG_LLD_DIR=$(find ${TMPDIR}/work -type d -path "*/clang-native/*/build/bin" | head -n 1)
 
     echo "CLANG_LLD_DIR=$CLANG_LLD_DIR"
 
@@ -139,12 +94,6 @@ do_compile() {
     export PATH="${STAGING_BINDIR_NATIVE}/clang-special/bin:$PATH"
     export CC="${STAGING_BINDIR_NATIVE}/clang-special/bin/clang"
     export CXX="${STAGING_BINDIR_NATIVE}/clang-special/bin/clang++"
-#    export PATH="${CLANG_BIN_DIR}:$PATH"
-#    export CC="${CLANG_BIN_DIR}/clang"
-#    export CXX="${CLANG_BIN_DIR}/clang++"
-    #export LDFLAGS=$(echo $LDFLAGS | sed 's/-fuse-ld=gold//g' | sed 's/-Wl,[^ ]*//g')
-    #export CFLAGS=$(echo $CFLAGS | sed 's/-fuse-ld=gold//g')
-    #export CXXFLAGS=$(echo $CXXFLAGS | sed 's/-fuse-ld=gold//g')
 
 # Path Interception: Hijack any call to 'ld'
     mkdir -p ${B}/linker-shim
@@ -161,11 +110,7 @@ ln -sf ${CLANG_LLD_DIR}/ld.lld ${B}/linker-shim/ld.gold
                    -DSWIFT_USE_LINKER=lld \
                    -DLLVM_USE_LINKER=lld \
                    -DCMAKE_C_FLAGS='-fPIC ${SYSROOT_FLAGS}' \
-                   -DCMAKE_CXX_FLAGS='-fPIC ${SYSROOT_FLAGS}' \
-                   -DSQLite3_INCLUDE_DIR=${STAGING_INCDIR_NATIVE} \
-                   -DSQLite3_LIBRARY=${STAGING_LIBDIR_NATIVE}/libsqlite3.so
-                    -DCMAKE_C_COMPILER=${STAGING_BINDIR_NATIVE}/clang-special/bin/clang \
-                    -DCMAKE_CXX_COMPILER=${STAGING_BINDIR_NATIVE}/clang-special/bin/clang++"
+                   -DCMAKE_CXX_FLAGS='-fPIC ${SYSROOT_FLAGS}'"
 
 
 
