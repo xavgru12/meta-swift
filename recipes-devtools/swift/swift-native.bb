@@ -33,8 +33,10 @@ DEPENDS += "\
     zlib-native \
     curl-native \
     icu-native \
-    clang-native \
+    ncurses-native \
 "
+PREFERRED_PROVIDER_clang = "swift-native"
+do_compile[depends] += "clang-native:do_populate_sysroot"
 
 RDEPENDS:${PN} = "ncurses-native"
 RDEPENDS:${PN}:remove = "clang-native"
@@ -121,7 +123,7 @@ do_compile() {
 
     CLANG_LIB_DIR=$(dirname "$CLANG_BIN_DIR")/lib
 
-    export LD_LIBRARY_PATH="${CLANG_LIB_DIR}:${LD_LIBRARY_PATH}"
+    export LD_LIBRARY_PATH="${STAGING_BINDIR_NATIVE}/clang-special/lib:${LD_LIBRARY_PATH}"
 
     echo "CLANG_LIB_DIR=$CLANG_LIB_DIR"
 
@@ -134,12 +136,15 @@ do_compile() {
 
     export LD="${CLANG_LLD_DIR}/ld.lld"
 
-    export PATH="${CLANG_BIN_DIR}:$PATH"
-    export CC="${CLANG_BIN_DIR}/clang"
-    export CXX="${CLANG_BIN_DIR}/clang++"
-    export LDFLAGS=$(echo $LDFLAGS | sed 's/-fuse-ld=gold//g' | sed 's/-Wl,[^ ]*//g')
-    export CFLAGS=$(echo $CFLAGS | sed 's/-fuse-ld=gold//g')
-    export CXXFLAGS=$(echo $CXXFLAGS | sed 's/-fuse-ld=gold//g')
+    export PATH="${STAGING_BINDIR_NATIVE}/clang-special/bin:$PATH"
+    export CC="${STAGING_BINDIR_NATIVE}/clang-special/bin/clang"
+    export CXX="${STAGING_BINDIR_NATIVE}/clang-special/bin/clang++"
+#    export PATH="${CLANG_BIN_DIR}:$PATH"
+#    export CC="${CLANG_BIN_DIR}/clang"
+#    export CXX="${CLANG_BIN_DIR}/clang++"
+    #export LDFLAGS=$(echo $LDFLAGS | sed 's/-fuse-ld=gold//g' | sed 's/-Wl,[^ ]*//g')
+    #export CFLAGS=$(echo $CFLAGS | sed 's/-fuse-ld=gold//g')
+    #export CXXFLAGS=$(echo $CXXFLAGS | sed 's/-fuse-ld=gold//g')
 
 # Path Interception: Hijack any call to 'ld'
     mkdir -p ${B}/linker-shim
@@ -158,7 +163,10 @@ ln -sf ${CLANG_LLD_DIR}/ld.lld ${B}/linker-shim/ld.gold
                    -DCMAKE_C_FLAGS='-fPIC ${SYSROOT_FLAGS}' \
                    -DCMAKE_CXX_FLAGS='-fPIC ${SYSROOT_FLAGS}' \
                    -DSQLite3_INCLUDE_DIR=${STAGING_INCDIR_NATIVE} \
-                   -DSQLite3_LIBRARY=${STAGING_LIBDIR_NATIVE}/libsqlite3.so"
+                   -DSQLite3_LIBRARY=${STAGING_LIBDIR_NATIVE}/libsqlite3.so
+                    -DCMAKE_C_COMPILER=${STAGING_BINDIR_NATIVE}/clang-special/bin/clang \
+                    -DCMAKE_CXX_COMPILER=${STAGING_BINDIR_NATIVE}/clang-special/bin/clang++"
+
 
 
     EXTRA_LLVM_CM_ARGS="-DLLVM_USE_LINKER=lld \

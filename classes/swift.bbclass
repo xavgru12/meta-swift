@@ -88,53 +88,59 @@ python do_swift_package_resolve() {
     import subprocess
     import os
 
+    # Fetch BitBake variables
     s = d.getVar('S')
     b = d.getVar('B')
-    recipe_sysroot_native = d.getVar("STAGING_DIR_NATIVE", True)
+    recipe_sysroot_native = d.getVar("STAGING_DIR_NATIVE")
+    native_libdir = d.getVar("STAGING_LIBDIR_NATIVE")
 
-    recipe_sysroot = d.getVar('RECIPE_SYSROOT')
-    tmpdir = d.getVar('TMPDIR')
+    # Start with the BitBake-provided environment
     env = os.environ.copy()
 
-# --- Start Swift Lib Discovery ---
-    # We look into the x86_64-linux/swift-native work directory for libraries
-    swift_native_lib_base = os.path.join(tmpdir, "work/x86_64-linux/swift-native")
-    
-    try:
-        # Dynamically find the exact lib directory
-        find_cmd = f"find {swift_native_lib_base} -type d -path '*/recipe-sysroot-native/usr/lib' 2>/dev/null | head -n 1"
-        swift_lib_dir = subprocess.check_output(find_cmd, shell=True).decode('utf-8').strip()
-        
-        if swift_lib_dir and os.path.exists(swift_lib_dir):
-            # Prepend the found directory to LD_LIBRARY_PATH
-            existing_ld_path = env.get('LD_LIBRARY_PATH', '')
-            env['LD_LIBRARY_PATH'] = f"{swift_lib_dir}:{existing_ld_path}".strip(':')
-            
-            # Also add the current recipe's native libs as a fallback
-            native_lib_dir = os.path.join(recipe_sysroot_native, "usr/lib")
-            env['LD_LIBRARY_PATH'] = f"{env['LD_LIBRARY_PATH']}:{native_lib_dir}"
-            
-            bb.note(f"Swift-Package-Resolve: Setting LD_LIBRARY_PATH to {env['LD_LIBRARY_PATH']}")
-        else:
-            bb.warn(f"Swift-Package-Resolve: Could not locate swift-native libraries in {swift_native_lib_base}")
-    except Exception as e:
-        bb.warn(f"Swift-Package-Resolve: Error during library discovery: {e}")
-    # --- End Swift Lib Discovery ---
+    # 1. FIX: Inject the native sysroot library path so the loader finds libncurses
+    # We prepend it to ensure the sysroot version is found before host versions
+    existing_ld_path = env.get('LD_LIBRARY_PATH', '')
+    if existing_ld_path:
+        env['LD_LIBRARY_PATH'] = f"{native_libdir}:{existing_ld_path}"
+    else:
+        env['LD_LIBRARY_PATH'] = native_libdir
 
+    # 2. Preserve SSH agent for private repo access
     ssh_auth_sock = d.getVar('BB_ORIGENV').get('SSH_AUTH_SOCK')
     if ssh_auth_sock:
         env['SSH_AUTH_SOCK'] = ssh_auth_sock
 
-    ret = subprocess.call([f'{recipe_sysroot_native}/usr/bin/swift', 'package', 'resolve', '--package-path', s, '--build-path', b], env=env)
-    if ret != 0:
-        bb.fatal('swift package resolve failed')
+    # 3. Construct the path to the swift binary
+    swift_bin = os.path.join(recipe_sysroot_native, 'usr/bin/swift')
 
-    # note: --depth 1 requires git version 2.43.0 or later
-    for package in os.listdir(path=f'{b}/checkouts'):
-        package_dir = f'{b}/checkouts/{package}'
-        ret = subprocess.call(['git', 'submodule', 'update', '--init', '--recursive', '--depth', '1'], cwd=package_dir, env=env)
-        if ret != 0:
-            bb.fatal('git submodule update failed')
+    bb.note(f"Running swift package resolve with LD_LIBRARY_PATH={env['LD_LIBRARY_PATH']}")
+
+    # 4. Execute swift package resolve
+    try:
+        subprocess.check_call(
+            [swift_bin, 'package', 'resolve', '--package-path', s, '--build-path', b], 
+            env=env
+        )
+    except subprocess.CalledProcessError as e:
+        bb.fatal(f'swift package resolve failed with exit code {e.returncode}')
+
+    # 5. Handle submodules in checkouts
+    checkouts_path = os.path.join(b, 'checkouts')
+    if os.path.exists(checkouts_path):
+        for package in os.listdir(checkouts_path):
+            package_dir = os.path.join(checkouts_path, package)
+            
+            # Ensure it's a directory (skip hidden files/dots)
+            if os.path.isdir(package_dir):
+                bb.note(f"Updating submodules for {package}...")
+                try:
+                    subprocess.check_call(
+                        ['git', 'submodule', 'update', '--init', '--recursive', '--depth', '1'], 
+                        cwd=package_dir, 
+                        env=env
+                    )
+                except subprocess.CalledProcessError:
+                    bb.fatal(f'git submodule update failed in {package_dir}')
 }
 
 addtask swift_package_resolve after do_unpack before do_compile
@@ -257,6 +263,12 @@ python swift_do_compile() {
     if ssh_auth_sock:
         env['SSH_AUTH_SOCK'] = ssh_auth_sock
     env['SYSROOT'] = recipe_sysroot
+
+
+    native_libdir = f"{recipe_sysroot_native}/usr/lib"
+    env['LD_LIBRARY_PATH'] = (
+        native_libdir + ":" + env.get('LD_LIBRARY_PATH', '')
+    )
 
     args = [f'{recipe_sysroot_native}/usr/bin/swift', 'build', '--package-path', s, '--build-path', b, '-c', build_mode, '--destination', destination_json] + extra_oeswift
 
