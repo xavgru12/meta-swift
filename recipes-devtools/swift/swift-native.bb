@@ -54,23 +54,13 @@ do_configure() {
 BUILD_LDFLAGS:remove = "-Wl,-O1"
 BUILD_LDFLAGS:remove = "-Wl,--hash-style=gnu"
 BUILD_LDFLAGS:remove = "-Wl,--as-needed"
-
-# Remove the specific GNU linker flags that the Swift driver rejects
 BUILD_LDFLAGS:remove = "-Wl,--enable-new-dtags"
-
-# This is the big one: Remove the RPATHs that Yocto injects automatically
-# which caused the "unknown argument: -Wl,-rpath" errors.
 BUILD_LDFLAGS:remove = "-Wl,-rpath-link,${STAGING_LIBDIR_NATIVE}"
 BUILD_LDFLAGS:remove = "-Wl,-rpath-link,${STAGING_DIR_NATIVE}/lib"
 BUILD_LDFLAGS:remove = "-Wl,-rpath,${STAGING_LIBDIR_NATIVE}"
 BUILD_LDFLAGS:remove = "-Wl,-rpath,${STAGING_DIR_NATIVE}/lib"
 
-# Explicitly use lld. The error you had earlier (relocation PC32) 
-# is almost always solved by using lld instead of the default ld.bfd.
 EXTRA_OECMAKE:append = " -DSWIFT_USE_LINKER=lld -DLLVM_USE_LINKER=lld"
-# Inside your do_compile
-EXTRA_SWIFT_ARGS="-Xlinker -fuse-ld=lld -Xcc -fPIC"
-# This prevents Clang from seeing flags it doesn't understand
 
 # Add this to ensure BitBake knows we need the lld tool available in the environment
 HOSTTOOLS_NONFATAL += "ld.lld"
@@ -81,7 +71,7 @@ do_compile() {
     export CPATH="${STAGING_INCDIR_NATIVE}:${CPATH}"
     SYSROOT_FLAGS="-I${STAGING_INCDIR_NATIVE} -L${STAGING_LIBDIR_NATIVE}"
 
-    export LD_LIBRARY_PATH="${STAGING_BINDIR_NATIVE}/clang-special/lib:${LD_LIBRARY_PATH}"
+    export LD_LIBRARY_PATH="${STAGING_BINDIR_NATIVE}/clang-native/lib:${LD_LIBRARY_PATH}"
 
     CLANG_LLD_DIR=$(find ${TMPDIR}/work -type d -path "*/clang-native/*/build/bin" | head -n 1)
 
@@ -91,9 +81,9 @@ do_compile() {
 
     export LD="${CLANG_LLD_DIR}/ld.lld"
 
-    export PATH="${STAGING_BINDIR_NATIVE}/clang-special/bin:$PATH"
-    export CC="${STAGING_BINDIR_NATIVE}/clang-special/bin/clang"
-    export CXX="${STAGING_BINDIR_NATIVE}/clang-special/bin/clang++"
+    export PATH="${STAGING_BINDIR_NATIVE}/clang-native/bin:$PATH"
+    export CC="${STAGING_BINDIR_NATIVE}/clang-native/bin/clang"
+    export CXX="${STAGING_BINDIR_NATIVE}/clang-native/bin/clang++"
 
 # Path Interception: Hijack any call to 'ld'
     mkdir -p ${B}/linker-shim
