@@ -21,6 +21,12 @@ jobs:
           repository: yoctoproject/poky
           path: poky
           ref: scarthgap
+      - name: Checkout meta-clang 
+        uses: actions/checkout@v4
+        with:
+          repository: kraj/meta-clang
+          path: poky/meta-clang
+          ref: scarthgap
       - name: Checkout Swift layer
         uses: actions/checkout@v4
         with:
@@ -30,6 +36,7 @@ jobs:
           cd $GITHUB_WORKSPACE/poky
           source oe-init-build-env
           bitbake-layers add-layer ../meta-swift
+          bitbake-layers add-layer ../meta-clang
           rm -f conf/local.conf
           echo 'MACHINE = "qemuarm64"' > conf/local.conf
           bitbake swift-hello-world
@@ -52,6 +59,12 @@ jobs:
           repository: yoctoproject/poky
           path: poky
           ref: scarthgap
+      - name: Checkout meta-clang 
+        uses: actions/checkout@v4
+        with:
+          repository: kraj/meta-clang
+          path: poky/meta-clang
+          ref: scarthgap
       - name: Checkout Swift layer
         uses: actions/checkout@v4
         with:
@@ -61,6 +74,7 @@ jobs:
           cd $GITHUB_WORKSPACE/poky
           source oe-init-build-env
           bitbake-layers add-layer ../meta-swift
+          bitbake-layers add-layer ../meta-clang
           rm -f conf/local.conf
           echo 'MACHINE = "qemuarm"' > conf/local.conf
           bitbake swift-hello-world
@@ -83,6 +97,12 @@ jobs:
           repository: yoctoproject/poky
           path: poky
           ref: scarthgap
+      - name: Checkout meta-clang 
+        uses: actions/checkout@v4
+        with:
+          repository: kraj/meta-clang
+          path: poky/meta-clang
+          ref: scarthgap
       - name: Checkout Swift layer
         uses: actions/checkout@v4
         with:
@@ -92,6 +112,7 @@ jobs:
           cd $GITHUB_WORKSPACE/poky
           source oe-init-build-env
           bitbake-layers add-layer ../meta-swift
+          bitbake-layers add-layer ../meta-clang
           rm -f conf/local.conf
           echo 'MACHINE = "qemux86-64"' > conf/local.conf
           bitbake swift-hello-world
