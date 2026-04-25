@@ -22,32 +22,6 @@ BUILD_DIR = "${B}/${BUILD_MODE}"
 # Additional parameters to pass to SPM
 EXTRA_OESWIFT ?= ""
 
-# sources/meta-swift/classes/swift-utils.bbclass
-
-python () {
-    import os
-    import subprocess
-
-    # Logic to find the path
-    # We use RECIPE_SYSROOT as a starting point to navigate the workdir
-    base_path = d.getVar('RECIPE_SYSROOT')
-    if base_path:
-        search_path = os.path.join(base_path, "../../../swift-native")
-        cmd = f"find {search_path} -type d -path '*/recipe-sysroot-native/usr/lib' 2>/dev/null | head -n 1"
-        
-        try:
-            found_path = subprocess.check_output(cmd, shell=True).decode('utf-8').strip()
-            if found_path:
-                # This makes ${SWIFT_LIB_DIR} available in Bitbake
-                d.setVar('SWIFT_LIB_DIR', found_path)
-                
-                # This exports it to the Shell environment for tasks like do_compile
-                d.appendVar('__export_props', ' LD_LIBRARY_PATH') 
-                d.appendVar('LD_LIBRARY_PATH', f":{found_path}")
-        except:
-            pass
-}
-
 do_fix_gcc_install_dir() {
     # symbolic links do not work, will not be found by Swift clang driver
     # this is necessary to make the libstdc++ location heuristic work, necessary for C++ interop
