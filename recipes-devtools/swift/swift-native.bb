@@ -159,6 +159,7 @@ do_install() {
 
     install -d ${D}${libdir}
     cp -rd ${B}/stage2/usr/lib/* ${D}${libdir}
+    cp ${S}/../build/bootstrap_stage2/llvm-linux-x86_64/lib/libIndexStore.so ${D}${libdir}
 
     install -d ${D}${includedir}
     cp -rd ${B}/stage2/usr/include/* ${D}${includedir}
