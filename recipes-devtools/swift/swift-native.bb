@@ -44,9 +44,8 @@ inherit native
 
 do_swift_checkout() {
     cd ${S}
-    ./utils/update-checkout --clone --scheme repro --config ${WORKDIR}/hashes || true
     git fetch
-    git checkout 92f926e23e6deac5a8d7c45b2e2e0cf75a0cb811
+    ./utils/update-checkout --clone --scheme repro --config ${WORKDIR}/hashes || true
 }
 
 addtask swift_checkout after do_unpack before do_patch
