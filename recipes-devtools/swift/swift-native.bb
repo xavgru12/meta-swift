@@ -5,7 +5,7 @@ LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://LICENSE.txt;md5=f6c482a0548ea60d6c2e015776534035"
 
 require swift-version.inc
-PV = "6.2.4"
+PV = "${SWIFT_VERSION}"
 
 def swift_native_arch_suffix(d):
     host_arch = d.getVar('HOST_ARCH')
@@ -20,9 +20,11 @@ def swift_host_arch(d):
 SWIFT_ARCH_SUFFIX = "${@swift_native_arch_suffix(d)}"
 SWIFT_HOST_ARCH = "${@swift_host_arch(d)}"
 
+USE_CHECKOUT_CONFIG ?= "0"
+
 SRC_DIR = "swift-project"
 SRC_URI = "git://github.com/swiftlang/swift.git;tag=${SWIFT_TAG};nobranch=1;protocol=https;destsuffix=git/swift-project/swift"
-SRC_URI += "file://checkout-config.json"
+SRC_URI += "${@bb.utils.contains('USE_CHECKOUT_CONFIG', '1', 'file://checkout-config.json', '', d)}"
 
 DEPENDS += "\
     cmake-native \
@@ -45,7 +47,13 @@ inherit native
 do_swift_checkout() {
     cd ${S}
     git fetch
-    ./utils/update-checkout --clone --scheme repro --config ${WORKDIR}/checkout-config.json || true
+
+    if [ "${USE_CHECKOUT_CONFIG}" = "1" ]; then
+        CHECKOUT_CONFIG="${WORKDIR}/checkout-config.json"
+        ./utils/update-checkout --clone --scheme repro --config "${CHECKOUT_CONFIG}" || true
+    else
+        ./utils/update-checkout --clone --scheme "release/${SWIFT_VERSION}"
+    fi
 }
 
 addtask swift_checkout after do_unpack before do_patch
