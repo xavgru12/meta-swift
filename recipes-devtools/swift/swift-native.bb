@@ -20,7 +20,6 @@ def swift_host_arch(d):
 SWIFT_ARCH_SUFFIX = "${@swift_native_arch_suffix(d)}"
 SWIFT_HOST_ARCH = "${@swift_host_arch(d)}"
 
-#tag=${SWIFT_TAG}
 SRC_DIR = "swift-project"
 SRC_URI = "git://github.com/swiftlang/swift.git;tag=${SWIFT_TAG};nobranch=1;protocol=https;destsuffix=git/swift-project/swift"
 SRC_URI += "file://hashes"
