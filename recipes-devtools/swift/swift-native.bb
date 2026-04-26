@@ -44,8 +44,7 @@ inherit native
 
 do_swift_checkout() {
     cd ${S}
-    cp ${WORKDIR}/hashes ${S}/hashes
-    ./utils/update-checkout --clone --scheme repro --config hashes || true
+    ./utils/update-checkout --clone --scheme repro --config ${WORKDIR}/hashes || true
     git fetch
     git checkout 92f926e23e6deac5a8d7c45b2e2e0cf75a0cb811
 }
