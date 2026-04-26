@@ -22,7 +22,7 @@ SWIFT_HOST_ARCH = "${@swift_host_arch(d)}"
 
 SRC_DIR = "swift-project"
 SRC_URI = "git://github.com/swiftlang/swift.git;tag=${SWIFT_TAG};nobranch=1;protocol=https;destsuffix=git/swift-project/swift"
-SRC_URI += "file://hashes"
+SRC_URI += "file://checkout-config.json"
 
 DEPENDS += "\
     cmake-native \
@@ -45,7 +45,7 @@ inherit native
 do_swift_checkout() {
     cd ${S}
     git fetch
-    ./utils/update-checkout --clone --scheme repro --config ${WORKDIR}/hashes || true
+    ./utils/update-checkout --clone --scheme repro --config ${WORKDIR}/checkout-config.json || true
 }
 
 addtask swift_checkout after do_unpack before do_patch
