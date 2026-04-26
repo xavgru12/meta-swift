@@ -120,27 +120,18 @@ ln -sf ${CLANG_LLD_DIR}/ld.lld ${B}/linker-shim/ld.gold
                    -DCMAKE_C_FLAGS='-fPIC ${SYSROOT_FLAGS}' \
                    -DCMAKE_CXX_FLAGS='-fPIC ${SYSROOT_FLAGS}'"
 
-
-
-    EXTRA_LLVM_CM_ARGS="-DLLVM_USE_LINKER=lld \
-                        -DSANITIZER_COMMON_LINK_FLAGS=-fuse-ld=lld \
-    -DCMAKE_EXE_LINKER_FLAGS='-fuse-ld=lld -L${STAGING_LIBDIR_NATIVE}' \
-    -DCMAKE_SHARED_LINKER_FLAGS='-fuse-ld=lld -L${STAGING_LIBDIR_NATIVE}'"
-
     cd ${S}
     ./utils/build-script --preset bootstrap_stage0 \
         build_subdir=bootstrap_stage0 \
         install_destdir=${B}/stage0 \
         --extra-cmake-options="${EXTRA_CM_ARGS}" \
-        --extra-llvm-cmake-options="${EXTRA_LLVM_CM_ARGS}" \
         --extra-swift-args="${EXTRA_SWIFT_ARGS}" && \
     PATH="${B}/stage0/usr/bin:$PATH" ./utils/build-script \
         --preset bootstrap_stage2 \
         build_subdir=bootstrap_stage2 \
         install_destdir=${B}/stage2 \
-        --extra-cmake-options="${EXTRA_CM_ARGS}" --extra-swift-args="${EXTRA_SWIFT_ARGS}" \
-        --extra-llvm-cmake-options="${EXTRA_LLVM_CM_ARGS}" 
-
+        --extra-cmake-options="${EXTRA_CM_ARGS}" \
+        --extra-swift-args="${EXTRA_SWIFT_ARGS}"
 }
 
 ########################################################################
