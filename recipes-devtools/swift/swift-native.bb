@@ -5,7 +5,6 @@ LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://LICENSE.txt;md5=f6c482a0548ea60d6c2e015776534035"
 
 require swift-version.inc
-PV = "${SWIFT_VERSION}"
 
 def swift_native_arch_suffix(d):
     host_arch = d.getVar('HOST_ARCH')
@@ -43,6 +42,18 @@ S = "${WORKDIR}/git/swift-project/swift"
 B = "${WORKDIR}/build"
 
 inherit native
+
+python __anonymous() {
+    import os
+
+    use_checkout_config = d.getVar("USE_CHECKOUT_CONFIG") == "1"
+    swift_version = d.getVar("SWIFT_VERSION")
+
+    if use_checkout_config:
+        d.setVar("PV", "repro")
+    else:
+        d.setVar("PV", swift_version)
+}
 
 do_swift_checkout() {
     cd ${S}
