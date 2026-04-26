@@ -41,14 +41,16 @@ S = "${WORKDIR}/git/swift-project/swift"
 B = "${WORKDIR}/build"
 
 inherit native
-do_configure[network] = "1"
-do_configure() {
+
+do_swift_checkout() {
     cd ${S}
     cp ${WORKDIR}/hashes ${S}/hashes
-    ./utils/update-checkout --clone --scheme repro --config hashes || true     
+    ./utils/update-checkout --clone --scheme repro --config hashes || true
     git fetch
     git checkout 92f926e23e6deac5a8d7c45b2e2e0cf75a0cb811
 }
+
+addtask swift_checkout after do_unpack before do_patch
 
 BUILD_LDFLAGS:remove = "-Wl,-O1"
 BUILD_LDFLAGS:remove = "-Wl,--hash-style=gnu"
