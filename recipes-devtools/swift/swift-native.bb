@@ -91,22 +91,20 @@ do_compile() {
 
     export LD_LIBRARY_PATH="${STAGING_BINDIR_NATIVE}/clang-native/lib:${LD_LIBRARY_PATH}"
 
-    CLANG_LLD_DIR=$(find ${TMPDIR}/work -type d -path "*/clang-native/*/build/bin" | head -n 1)
+    CLANG_NATIVE_BIN_DIR="${STAGING_BINDIR_NATIVE}/clang-native/bin"
 
-    echo "CLANG_LLD_DIR=$CLANG_LLD_DIR"
+    find "$CLANG_NATIVE_BIN_DIR" -name "ld.lld"
 
-    find "$CLANG_LLD_DIR" -name "ld.lld"
+    export LD="${CLANG_NATIVE_BIN_DIR}/ld.lld"
 
-    export LD="${CLANG_LLD_DIR}/ld.lld"
-
-    export PATH="${STAGING_BINDIR_NATIVE}/clang-native/bin:$PATH"
-    export CC="${STAGING_BINDIR_NATIVE}/clang-native/bin/clang"
-    export CXX="${STAGING_BINDIR_NATIVE}/clang-native/bin/clang++"
+    export PATH="${CLANG_NATIVE_BIN_DIR}:$PATH"
+    export CC="${CLANG_NATIVE_BIN_DIR}/clang"
+    export CXX="${CLANG_NATIVE_BIN_DIR}/clang++"
 
 # Path Interception: Hijack any call to 'ld'
     mkdir -p ${B}/linker-shim
-    ln -sf ${CLANG_LLD_DIR}/ld.lld ${B}/linker-shim/ld
-ln -sf ${CLANG_LLD_DIR}/ld.lld ${B}/linker-shim/ld.gold
+    ln -sf ${CLANG_NATIVE_BIN_DIR}/ld.lld ${B}/linker-shim/ld
+    ln -sf ${CLANG_NATIVE_BIN_DIR}/ld.lld ${B}/linker-shim/ld.gold
     export PATH="${B}/linker-shim:$PATH"
 
     # Define the Force-Flags
