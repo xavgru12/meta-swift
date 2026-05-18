@@ -19,11 +19,11 @@ def swift_host_arch(d):
 SWIFT_ARCH_SUFFIX = "${@swift_native_arch_suffix(d)}"
 SWIFT_HOST_ARCH = "${@swift_host_arch(d)}"
 
-USE_CHECKOUT_CONFIG ?= "0"
+SWIFT_USE_CHECKOUT_CONFIG ?= "0"
 
 SRC_DIR = "swift-project"
 SRC_URI = "git://github.com/swiftlang/swift.git;tag=${SWIFT_TAG};nobranch=1;protocol=https;destsuffix=git/swift-project/swift"
-SRC_URI += "${@bb.utils.contains('USE_CHECKOUT_CONFIG', '1', 'file://checkout-config.json', '', d)}"
+SRC_URI += "${@bb.utils.contains('SWIFT_USE_CHECKOUT_CONFIG', '1', 'file://checkout-config.json', '', d)}"
 
 DEPENDS += "\
     cmake-native \
@@ -46,7 +46,7 @@ inherit native
 python __anonymous() {
     import os
 
-    use_checkout_config = d.getVar("USE_CHECKOUT_CONFIG") == "1"
+    use_checkout_config = d.getVar("SWIFT_USE_CHECKOUT_CONFIG") == "1"
     swift_version = d.getVar("SWIFT_VERSION")
 
     if use_checkout_config:
@@ -59,7 +59,7 @@ do_swift_checkout() {
     cd ${S}
     git fetch
 
-    if [ "${USE_CHECKOUT_CONFIG}" = "1" ]; then
+    if [ "${SWIFT_USE_CHECKOUT_CONFIG}" = "1" ]; then
         CHECKOUT_CONFIG="${WORKDIR}/checkout-config.json"
         ./utils/update-checkout --clone --scheme repro --config "${CHECKOUT_CONFIG}" || true
     else
